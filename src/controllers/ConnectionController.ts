@@ -1,6 +1,6 @@
 import type { Camera } from "../editor/Camera";
-import { drawBezier } from "../editor/Draw";
 import type { EditorEvents } from "../editor/Events";
+import { getPortPosition } from "../editor/Utilts";
 import type { Position } from "../graph-api/BlueprintNode";
 import type { EventBus } from "../graph-api/EventBus";
 import type { NodeGraph } from "../graph-api/NodeGraph";
@@ -19,7 +19,7 @@ interface PortState {
 }
 
 export class ConnectionController {
-  private previewConnection: PreviewConnection | null = null;
+  public previewConnection: PreviewConnection | null = null;
   private portState: PortState = { port: null, connection: null };
   private hoveredPort: Port | null = null;
 
@@ -27,17 +27,12 @@ export class ConnectionController {
     private events: EventBus<EditorEvents>,
     private graph: NodeGraph,
     private camera: Camera,
-    private ctx: CanvasRenderingContext2D
   ) {
     this.events.on("portEnter", this.onPortEnter);
     this.events.on("portLeave", this.onPortLeave);
     this.events.on("portDown", this.onPortDown);
     this.events.on("portDrag", this.onPortDrag);
     this.events.on("mouseUp", this.onMouseUp);
-
-    events.on("redraw", () => {
-      this.drawConnections();
-    })
   }
 
 
@@ -50,7 +45,9 @@ export class ConnectionController {
 
     this.previewConnection = null;
     this.portState = { port: null, connection: null };
-    this.drawConnections();
+
+    this.events.emit("redraw", undefined);
+
   };
 
   private onPortEnter = ({ port }: EditorEvents["portEnter"]) => {
@@ -85,12 +82,13 @@ export class ConnectionController {
 
     const world = this.camera.screenToWorld(x, y);
     this.previewConnection.b = world;
-    this.drawConnections();
+
+    this.events.emit("redraw", undefined);
   };
 
   private startNewConnection(port: Port) {
     this.previewConnection = {
-      a: this.getPortPosition(port),
+      a: getPortPosition(port),
       b: { x: 0, y: 0 },
     };
   }
@@ -101,34 +99,11 @@ export class ConnectionController {
     this.portState.port = fixedPort;
 
     this.previewConnection = {
-      a: this.getPortPosition(fixedPort),
+      a: getPortPosition(fixedPort),
       b: { x: 0, y: 0 },
     };
   }
 
-  private getPortPosition(port: Port): Position {
-    return {
-      x: port.node.position.x + port.offset!.x,
-      y: port.node.position.y + port.offset!.y,
-    };
-  }
 
-  private drawConnections() {
-    if (!this.ctx) return;
 
-    this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
-
-    this.graph.connections.forEach((conn) => {
-
-      const a = this.camera.worldToScreen(this.getPortPosition(conn.from));
-      const b = this.camera.worldToScreen(this.getPortPosition(conn.to));
-      drawBezier(this.ctx, a, b, "rgba(0, 0, 0, 1)", 2, false);
-    });
-
-    if (this.previewConnection) {
-      const a = this.camera.worldToScreen(this.previewConnection.a);
-      const b = this.camera.worldToScreen(this.previewConnection.b);
-      drawBezier(this.ctx, a, b, "blue", 2, true);
-    }
-  }
 }

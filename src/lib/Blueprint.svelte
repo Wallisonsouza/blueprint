@@ -68,60 +68,76 @@
 >
   <div class="node-header">{node.type}</div>
 
-  <div class="exec-ports">
-    {#each node.outputs.filter((p) => p.type === "exec") as port}
-      <div class="port exec-port" id={port.id}>{port.label}</div>
-    {/each}
-  </div>
+  <div class="node">
+    <div class="node-header">{node.type}</div>
 
-  <div class="data-ports">
-    <div class="inputs">
-      <!-- <input class="input-data" type="number" /> -->
-      {#each node.inputs.filter((p) => p.type !== "exec") as port}
-        <div class="port data-port" id={port.id}>{port.label}</div>
+    <!-- Exec ports -->
+    <div class="exec-ports">
+      {#each Array(Math.max(node.inputs.filter((p) => p.type === "exec").length, node.outputs.filter((p) => p.type === "exec").length)) as _, i}
+        <div class="port-row">
+          <div class="left">
+            {#if node.inputs.filter((p) => p.type === "exec")[i]}
+              <div
+                class="port input-port exec"
+                id={node.inputs.filter((p) => p.type === "exec")[i].id}
+              >
+                <div class="port-label">
+                  {node.inputs.filter((p) => p.type === "exec")[i].label}
+                </div>
+              </div>
+            {/if}
+          </div>
+          <div class="right">
+            {#if node.outputs.filter((p) => p.type === "exec")[i]}
+              <div
+                class="port output-port exec"
+                id={node.outputs.filter((p) => p.type === "exec")[i].id}
+              >
+                <div class="port-label">
+                  {node.outputs.filter((p) => p.type === "exec")[i].label}
+                </div>
+              </div>
+            {/if}
+          </div>
+        </div>
       {/each}
     </div>
-    <div class="outputs">
-      {#each node.outputs.filter((p) => p.type !== "exec") as port}
-        <div class="port data-port" id={port.id}>{port.label}</div>
+
+    <!-- Data ports -->
+    <div class="data-ports">
+      {#each Array(Math.max(node.inputs.filter((p) => p.type !== "exec").length, node.outputs.filter((p) => p.type !== "exec").length)) as _, i}
+        <div class="port-row">
+          <div class="left">
+            {#if node.inputs.filter((p) => p.type !== "exec")[i]}
+              <div
+                class="port input-port data"
+                id={node.inputs.filter((p) => p.type !== "exec")[i].id}
+              ></div>
+
+              <div class="port-label">
+                {node.inputs.filter((p) => p.type !== "exec")[i].label}
+              </div>
+            {/if}
+          </div>
+          <div class="right">
+            {#if node.outputs.filter((p) => p.type !== "exec")[i]}
+              <div class="port-label">
+                {node.outputs.filter((p) => p.type !== "exec")[i].label}
+              </div>
+
+              <div
+                class="port output-port data"
+                id={node.outputs.filter((p) => p.type !== "exec")[i].id}
+              ></div>
+            {/if}
+          </div>
+        </div>
       {/each}
     </div>
   </div>
 </div>
 
 <style>
-  .input-data {
-    width: 100%;
-    padding: 4px 6px;
-
-    background: #1f2a38;
-    color: #ecf0f1;
-
-    border: 1px solid #3b4a5a;
-    border-radius: 4px;
-
-    font-size: 12px;
-    outline: none;
-
-    transition: all 0.15s ease;
-  }
-
-  /* focus = destaque suave */
-  .input-data:focus {
-    border-color: #3498db;
-    background: #243447;
-  }
-
-  /* remove setinhas feias do number */
-  .input-data::-webkit-outer-spin-button,
-  .input-data::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-
-  .input-data[type="number"] {
-    -moz-appearance: textfield;
-  }
   .node {
     position: absolute;
     background: #2c3e50;
@@ -131,7 +147,7 @@
     user-select: none;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow: visible;
     font-family: sans-serif;
     width: 140px;
     z-index: 999;
@@ -144,42 +160,53 @@
     text-align: center;
   }
 
-  .exec-ports {
-    display: flex;
-    gap: 4px;
-    padding: 4px;
-    justify-content: flex-start;
-    background: #3b4a5a;
-  }
-
-  .data-ports {
+  .port-row {
     display: flex;
     justify-content: space-between;
-    background: #3b4a5a;
-    padding: 4px;
+    align-items: center;
+
+    height: 28px;
   }
 
-  .inputs,
-  .outputs {
-    display: flex;
+  .left,
+  .right {
+    height: 100%;
     justify-content: center;
-    flex-direction: column;
-    gap: 2px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
   }
 
-  .port {
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-size: 12px;
-    color: white;
-    white-space: nowrap;
-  }
-
-  .exec-port {
+  .port.input-port.exec,
+  .port.output-port.exec {
     background: #e67e22;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: white;
+    min-width: 40px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
-  .data-port {
-    background: #3498db;
+  .port.input-port.data,
+  .port.output-port.data {
+    background: #03a9f4;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+  }
+
+  .port-label {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    pointer-events: none;
+    font-size: 12px;
   }
 </style>

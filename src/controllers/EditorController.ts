@@ -4,10 +4,10 @@ import type { EventBus } from "../graph-api/EventBus";
 export class EditorController {
   constructor(private events: EventBus<EditorEvents>, private target: HTMLElement | Window = window) {
 
-    this.target.addEventListener("mousedown", this.onMouseDown);
-    this.target.addEventListener("mousemove", this.onMouseMove);
-    this.target.addEventListener("mouseup", this.onMouseUp);
-    this.target.addEventListener("wheel", this.onWheel, { passive: false });
+    this.target.addEventListener("mousedown", this.onMouseDown as any);
+    this.target.addEventListener("mousemove", this.onMouseMove as any);
+    this.target.addEventListener("mouseup", this.onMouseUp as any);
+    this.target.addEventListener("wheel", this.onWheel as any, { passive: false });
   }
 
   private onMouseDown = (e: MouseEvent) => {

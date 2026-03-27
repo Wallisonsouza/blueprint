@@ -76,3 +76,23 @@ NodeBuilder.register("Subtract", (position) => {
   Factory.createPort(node, Types.Number, "output", "Result");
   return node;
 });
+
+
+NodeBuilder.register("EventStart", (position) => {
+  const node = Factory.createNode("EventStart", position);
+
+
+  Factory.createPort(node, "exec", "output", "Exec");
+
+  return node;
+});
+
+NodeBuilder.register("PrintString", (position) => {
+  const node = Factory.createNode("PrintString", position);
+
+  Factory.createPort(node, "exec", "input", "Exec");
+  Factory.createPort(node, "exec", "output", "Then");
+  Factory.createPort(node, "string", "input", "Text");
+
+  return node;
+});

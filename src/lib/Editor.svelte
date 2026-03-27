@@ -1,69 +1,52 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { graph } from "../controllers/GraphController";
-  import { Camera } from "../editor/Camera";
 
-  import { CameraController } from "../controllers/CameraController";
-  import { ConnectionController } from "../controllers/ConnectionController";
-  import { DragController } from "../controllers/DragController";
-  import { EditorController } from "../controllers/EditorController";
-  import { nodeEvents as editorEvents } from "../controllers/NodeController";
+  import { Draw } from "../editor/Draw";
+  import { Editor } from "../editor/Editor";
   import Blueprint from "./Blueprint.svelte";
 
   let cameraElement: HTMLDivElement;
   let sceneElement: HTMLDivElement;
-  let gridCanvas: HTMLCanvasElement;
+  let canvas: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D;
-  let camera: Camera = new Camera();
 
-  let cameraController: CameraController;
-  let dragController: DragController;
-  let connectionController: ConnectionController;
-  let editorController: EditorController;
+  let editor: Editor;
 
   window.addEventListener("resize", () => {
-    gridCanvas.width = cameraElement.clientWidth;
-    gridCanvas.height = cameraElement.clientHeight;
-  });
+    canvas.width = cameraElement.clientWidth;
+    canvas.height = cameraElement.clientHeight;
 
-  let needsRedraw = false;
-
-  editorEvents.on("redraw", () => {
-    if (!needsRedraw) {
-      needsRedraw = true;
-      requestAnimationFrame(() => {
-        sceneElement.style.transform = `translate(${camera.x}px, ${camera.y}px) scale(${camera.scale})`;
-        needsRedraw = false;
-      });
-    }
+    editor.events.emit("redraw", undefined);
   });
 
   onMount(() => {
-    ctx = gridCanvas.getContext("2d")!;
+    ctx = canvas.getContext("2d")!;
 
-    editorController = new EditorController(editorEvents, window);
+    editor = new Editor(ctx);
 
-    dragController = new DragController(editorEvents, camera);
-    cameraController = new CameraController(editorEvents, camera);
+    editor.events.on("redraw", () => {
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
-    connectionController = new ConnectionController(
-      editorEvents,
-      graph,
-      camera,
-      ctx,
-    );
+      Draw.drawGrid(ctx, editor);
+      Draw.drawConnections(ctx, editor);
+      sceneElement.style.transform = `translate(${editor.camera.x}px, ${editor.camera.y}px) scale(${editor.camera.scale})`;
+    });
 
-    gridCanvas.width = cameraElement.clientWidth;
-    gridCanvas.height = cameraElement.clientHeight;
+    canvas.width = cameraElement.clientWidth;
+    canvas.height = cameraElement.clientHeight;
+
+    editor.events.emit("redraw", undefined);
   });
 </script>
 
 <div bind:this={cameraElement} class="camera">
-  <canvas bind:this={gridCanvas} class="draw"></canvas>
+  <canvas bind:this={canvas} class="draw"></canvas>
   <div bind:this={sceneElement} class="scene">
-    {#each Array.from(graph.nodes.values()) as node (node.id)}
-      <Blueprint eventsTarget={editorEvents} {node} />
-    {/each}
+    {#if editor}
+      {#each Array.from(editor.graph.nodes.values()) as node (node.id)}
+        <Blueprint eventsTarget={editor.events} {node} />
+      {/each}
+    {/if}
   </div>
 </div>
 
@@ -74,7 +57,7 @@
     overflow: hidden;
     position: relative;
     cursor: grab;
-    background: #f0f0f0;
+    background: #b1b1b1;
   }
 
   .draw {

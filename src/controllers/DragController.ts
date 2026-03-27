@@ -16,10 +16,11 @@ interface DragState {
 
 export class DragController {
   private dragState: DragState = { type: null };
-  private step = 10;
+  public step;
 
-  constructor(private events: EventBus<EditorEvents>, private camera: Camera) {
+  constructor(private events: EventBus<EditorEvents>, private camera: Camera, step: number = 1) {
 
+    this.step = step;
     this.events.on("nodeDown", this.onNodeDown);
     this.events.on("portDown", this.onPortDown);
     this.events.on("mouseMove", this.onDragMove);
@@ -61,7 +62,6 @@ export class DragController {
 
       this.events.emit("nodeMove", { node: this.dragState.node, event: e });
     }
-
     if (this.dragState.type === "port" && this.dragState.port) {
       this.events.emit("portDrag", {
         port: this.dragState.port,
