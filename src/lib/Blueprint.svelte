@@ -53,7 +53,7 @@
     nodeEl.style.top = node.position.y + "px";
   }
 
-  eventsTarget.on("redraw", () => {
+  eventsTarget.on("nodeMove", () => {
     updatePosition();
   });
 </script>

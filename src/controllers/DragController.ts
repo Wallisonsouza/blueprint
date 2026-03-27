@@ -3,73 +3,88 @@ import type { BlueprintNode } from "../graph-api/BlueprintNode";
 import type { EventBus } from "../graph-api/EventBus";
 import type { Port } from "../graph-api/Types";
 
+type DragType = "node" | "port" | null;
+
+interface DragState {
+  type: DragType;
+  node?: BlueprintNode;
+  port?: Port;
+  startPos?: { x: number; y: number };
+  mouseStart?: { x: number; y: number };
+}
+
 export class DragController {
-  private draggingNode: BlueprintNode | null = null;
-  private draggingPort: Port | null = null;
+  private dragState: DragState = { type: null };
 
-  private nodeStart = { x: 0, y: 0 };
-  private mouseStart = { x: 0, y: 0 };
+  private mouseMoveWrapper = (e: Event) => this.onDragMove(e as MouseEvent);
+  private mouseUpWrapper = () => this.onDragUp();
 
-  constructor(private events: EventBus<EditorEvents>) {
+  constructor(
+    private events: EventBus<EditorEvents>,
+    private target: EventTarget = window
+  ) {
     this.events.on("nodeDown", this.onNodeDown);
     this.events.on("portDown", this.onPortDown);
   }
 
-  // ----------------- NODE -----------------
   private onNodeDown = ({ node, event }: EditorEvents["nodeDown"]) => {
-    this.draggingNode = node;
+    this.dragState = {
+      type: "node",
+      node,
+      startPos: { ...node.position },
+      mouseStart: { x: event.clientX, y: event.clientY },
+    };
 
-    this.nodeStart = { ...node.position };
-    this.mouseStart = { x: event.clientX, y: event.clientY };
-
-    window.addEventListener("mousemove", this.onNodeMove);
-    window.addEventListener("mouseup", this.onNodeUp);
+    this.target.addEventListener("mousemove", this.mouseMoveWrapper);
+    this.target.addEventListener("mouseup", this.mouseUpWrapper);
   };
 
-  private onNodeMove = (e: MouseEvent) => {
-    if (!this.draggingNode) return;
-
-    const dx = e.clientX - this.mouseStart.x;
-    const dy = e.clientY - this.mouseStart.y;
-
-    this.draggingNode.position.x = this.nodeStart.x + dx;
-    this.draggingNode.position.y = this.nodeStart.y + dy;
-
-    this.events.emit("nodeMove", { node: this.draggingNode, event: e });
-  };
-
-  private onNodeUp = () => {
-    this.draggingNode = null;
-    window.removeEventListener("mousemove", this.onNodeMove);
-    window.removeEventListener("mouseup", this.onNodeUp);
-  };
-
-  // ----------------- PORT -----------------
   private onPortDown = ({ port }: EditorEvents["portDown"]) => {
-    this.draggingPort = port;
+    this.dragState = {
+      type: "port",
+      port,
+    };
 
-    window.addEventListener("mousemove", this.onPortMove);
-    window.addEventListener("mouseup", this.onPortUp);
+    this.target.addEventListener("mousemove", this.mouseMoveWrapper);
+    this.target.addEventListener("mouseup", this.mouseUpWrapper);
   };
 
-  private onPortMove = (e: MouseEvent) => {
-    if (!this.draggingPort) return;
+  private onDragMove = (e: MouseEvent) => {
+    if (!this.dragState.type) return;
 
-    this.events.emit("redraw"); // Atualiza visual
-    this.events.emit("portDrag", {
-      port: this.draggingPort,
-      x: e.clientX,
-      y: e.clientY,
-    });
+    if (
+      this.dragState.type === "node" &&
+      this.dragState.node &&
+      this.dragState.startPos &&
+      this.dragState.mouseStart
+    ) {
+      const dx = e.clientX - this.dragState.mouseStart.x;
+      const dy = e.clientY - this.dragState.mouseStart.y;
+
+      this.dragState.node.position.x = this.dragState.startPos.x + dx;
+      this.dragState.node.position.y = this.dragState.startPos.y + dy;
+
+      this.events.emit("nodeMove", { node: this.dragState.node, event: e });
+    }
+
+    if (this.dragState.type === "port" && this.dragState.port) {
+      this.events.emit("redraw", undefined);
+      this.events.emit("portDrag", {
+        port: this.dragState.port,
+        x: e.clientX,
+        y: e.clientY,
+      });
+    }
   };
 
-  private onPortUp = () => {
-    if (!this.draggingPort) return;
+  private onDragUp = () => {
+    if (this.dragState.type === "port" && this.dragState.port) {
+      this.events.emit("portUp", { port: this.dragState.port });
+    }
 
-    this.events.emit("portUp", { port: this.draggingPort });
-    this.draggingPort = null;
+    this.dragState = { type: null };
 
-    window.removeEventListener("mousemove", this.onPortMove);
-    window.removeEventListener("mouseup", this.onPortUp);
+    this.target.removeEventListener("mousemove", this.mouseMoveWrapper);
+    this.target.removeEventListener("mouseup", this.mouseUpWrapper);
   };
 }

@@ -37,7 +37,6 @@
   function requestRedraw() {
     updateScene();
     drawConnections();
-    editorEvents.emit("redraw", {});
   }
 
   function getPortPosition(port: Port): Position {
@@ -60,7 +59,6 @@
     offsetX = e.clientX - startX;
     offsetY = e.clientY - startY;
     requestRedraw();
-    editorEvents.emit("redraw", {});
   }
 
   function onMouseUpWindow() {
