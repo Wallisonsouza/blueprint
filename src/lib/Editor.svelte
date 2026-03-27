@@ -3,7 +3,8 @@
   import { graph } from "../controllers/GraphController";
   import { Camera } from "../editor/Camera";
 
-  import { nodeEvents } from "../controllers/NodeController";
+  import { DragController } from "../controllers/DragController";
+  import { nodeEvents as editorEvents } from "../controllers/NodeController";
   import { drawBezier, type PreviewConnection } from "../editor/Draw";
   import type { Position } from "../graph-api/BlueprintNode";
   import type { Connection, Port } from "../graph-api/Types";
@@ -23,7 +24,8 @@
   let isDragging = false;
   let startX = 0;
   let startY = 0;
-  const gridSize = 50;
+
+  const dragController: DragController = new DragController(editorEvents);
 
   window.addEventListener("resize", () => {
     gridCanvas.width = camera.clientWidth;
@@ -34,9 +36,8 @@
 
   function requestRedraw() {
     updateScene();
-    drawGrid();
     drawConnections();
-    nodeEvents.emit("nodeUpdate", {});
+    editorEvents.emit("redraw", {});
   }
 
   function getPortPosition(port: Port): Position {
@@ -44,30 +45,6 @@
       x: port.node.position.x + port.offset!.x,
       y: port.node.position.y + port.offset!.y,
     };
-  }
-
-  // --- GRID ---
-  function drawGrid() {
-    if (!ctx) return;
-    const w = gridCanvas.width;
-    const h = gridCanvas.height;
-    ctx.clearRect(0, 0, w, h);
-    ctx.strokeStyle = "#ccc";
-    ctx.lineWidth = 1;
-
-    for (let x = offsetX % (gridSize * scale); x < w; x += gridSize * scale) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, h);
-      ctx.stroke();
-    }
-
-    for (let y = offsetY % (gridSize * scale); y < h; y += gridSize * scale) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(w, y);
-      ctx.stroke();
-    }
   }
 
   // --- PAN ---
@@ -83,6 +60,7 @@
     offsetX = e.clientX - startX;
     offsetY = e.clientY - startY;
     requestRedraw();
+    editorEvents.emit("redraw", {});
   }
 
   function onMouseUpWindow() {
@@ -135,7 +113,7 @@
     scene.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
   }
 
-  nodeEvents.on("nodeMove", () => {
+  editorEvents.on("nodeMove", () => {
     requestRedraw();
   });
 
@@ -159,8 +137,6 @@
   function drawConnections() {
     if (!ctx) return;
     ctx.clearRect(0, 0, gridCanvas.width, gridCanvas.height);
-
-    drawGrid();
 
     graph.connections.forEach((conn) => {
       const a = cameraController.worldToScreen(getPortPosition(conn.from));
@@ -210,17 +186,17 @@
 
   let hoveredPort: Port | null = null;
 
-  nodeEvents.on("portEnter", ({ port }) => {
+  editorEvents.on("portEnter", ({ port }) => {
     hoveredPort = port;
   });
 
-  nodeEvents.on("portLeave", ({ port }) => {
+  editorEvents.on("portLeave", ({ port }) => {
     if (hoveredPort === port) {
       hoveredPort = null;
     }
   });
 
-  nodeEvents.on("portDown", ({ port, event }) => {
+  editorEvents.on("portDown", ({ port, event }) => {
     const conn = graph.getFirstConnectionByPort(port);
 
     portState = {
@@ -236,7 +212,7 @@
     }
   });
 
-  nodeEvents.on("portDrag", ({ port, x, y }) => {
+  editorEvents.on("portDrag", ({ port, x, y }) => {
     if (!previewConnection) return;
 
     const world = cameraController.screenToWorld(x, y);
@@ -251,7 +227,7 @@
   <canvas bind:this={gridCanvas} class="draw"></canvas>
   <div bind:this={scene} class="scene">
     {#each Array.from(graph.nodes.values()) as node (node.id)}
-      <Blueprint eventsTarget={nodeEvents} {node} />
+      <Blueprint eventsTarget={editorEvents} {node} />
     {/each}
   </div>
 </div>

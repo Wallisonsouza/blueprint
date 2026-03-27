@@ -1,20 +1,27 @@
 import type { BlueprintNode } from "../graph-api/BlueprintNode";
-import type { Port } from "../graph-api/Types";
+import type { Connection, Port } from "../graph-api/Types";
 
+export interface EditorEvents {
+  // Node
+  nodeDown: { node: BlueprintNode; event: MouseEvent };
+  nodeUp: { node: BlueprintNode; event: MouseEvent };
+  nodeMove: { node: BlueprintNode; event: MouseEvent };
 
-export interface PortEvents {
+  // Port
+  portEnter: { port: Port };
+  portLeave: { port: Port };
   portDown: { port: Port; event: MouseEvent };
   portUp: { port: Port };
   portDrag: { port: Port; x: number; y: number };
 
-  portEnter: { port: Port };
-  portLeave: { port: Port };
-}
+  // Camera / viewport
+  cameraMove: { offsetX: number; offsetY: number; scale: number };
+  cameraZoom: { offsetX: number; offsetY: number; scale: number };
 
-export interface NodeEditorEvents extends PortEvents {
+  // Editor redraw / request
+  redraw: undefined;
 
-  nodeUpdate: {};
-  nodeUp: { node: BlueprintNode; event: MouseEvent };
-  nodeDown: { node: BlueprintNode; event: MouseEvent };
-  nodeMove: { node: BlueprintNode; event: MouseEvent };
+  // Conexões
+  connectionCreated: { connection: Connection };
+  connectionRemoved: { connection: Connection };
 }

@@ -1,4 +1,4 @@
-import type { NodeEditorEvents } from "../editor/Events";
+import type { EditorEvents } from "../editor/Events";
 import { EventBus } from "../graph-api/EventBus";
 
-export const nodeEvents = new EventBus<NodeEditorEvents>();
+export const nodeEvents = new EventBus<EditorEvents>();

@@ -1,21 +1,12 @@
 <script lang="ts">
-  import { onDestroy, onMount } from "svelte";
+  import { onMount } from "svelte";
+  import type { EditorEvents } from "../editor/Events";
   import type { BlueprintNode } from "../graph-api/BlueprintNode";
   import type { EventBus } from "../graph-api/EventBus";
-    import type { NodeEditorEvents } from "../editor/Events";
 
   export let node: BlueprintNode;
-  export let scale = 1;
-
   let nodeEl: HTMLDivElement;
-
-  let isDragging = false;
-  let dragStartMouseX = 0;
-  let dragStartMouseY = 0;
-  let dragStartNodeX = 0;
-  let dragStartNodeY = 0;
-
-  export let eventsTarget: EventBus<NodeEditorEvents>;
+  export let eventsTarget: EventBus<EditorEvents>;
 
   onMount(() => {
     updatePosition();
@@ -40,76 +31,20 @@
         eventsTarget.emit("portLeave", { port });
       });
 
-      let isPortDragging = false;
-
       el.addEventListener("mousedown", (e) => {
         e.stopPropagation();
-        isPortDragging = true;
-
         eventsTarget.emit("portDown", { port, event: e });
-
-        window.addEventListener("mousemove", onPortDragMove);
-        window.addEventListener("mouseup", onPortDragEnd);
       });
-
-      function onPortDragMove(e: MouseEvent) {
-        if (!isPortDragging) return;
-        eventsTarget.emit("portDrag", {
-          port,
-          x: e.clientX,
-          y: e.clientY,
-        });
-      }
-
-      function onPortDragEnd(e: MouseEvent) {
-        if (isPortDragging) {
-          isPortDragging = false;
-
-          eventsTarget.emit("portUp", { port });
-
-          window.removeEventListener("mousemove", onPortDragMove);
-          window.removeEventListener("mouseup", onPortDragEnd);
-        }
-      }
     });
   });
 
   function onMouseDown(e: MouseEvent) {
     e.stopPropagation();
-    isDragging = true;
 
-    dragStartNodeX = node.position.x;
-    dragStartNodeY = node.position.y;
-    dragStartMouseX = e.clientX;
-    dragStartMouseY = e.clientY;
-
-    nodeEl.style.cursor = "grabbing";
-
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
-  }
-
-  function onMouseMove(e: MouseEvent) {
-    if (!isDragging) return;
-
-    const dx = (e.clientX - dragStartMouseX) / scale;
-    const dy = (e.clientY - dragStartMouseY) / scale;
-
-    node.position.x = dragStartNodeX + dx;
-    node.position.y = dragStartNodeY + dy;
-
-    updatePosition();
-    eventsTarget.emit("nodeMove", { node: node, event: e });
-  }
-
-  function onMouseUp() {
-    if (isDragging) {
-      isDragging = false;
-      nodeEl.style.cursor = "pointer";
-
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
-    }
+    eventsTarget.emit("nodeDown", {
+      node,
+      event: e,
+    });
   }
 
   function updatePosition() {
@@ -118,9 +53,8 @@
     nodeEl.style.top = node.position.y + "px";
   }
 
-  onDestroy(() => {
-    window.removeEventListener("mousemove", onMouseMove);
-    window.removeEventListener("mouseup", onMouseUp);
+  eventsTarget.on("redraw", () => {
+    updatePosition();
   });
 </script>
 
