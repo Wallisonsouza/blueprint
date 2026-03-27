@@ -1,0 +1,97 @@
+{
+  "nodes": [
+    {
+      "id": "d75ad965-dc3d-410b-ad06-25336b70b7fd",
+      "type": "Add",
+      "x": 0,
+      "y": 0,
+      "width": 120,
+      "height": 50,
+      "data": {},
+      "in": [
+        {
+          "id": "7343f3d7-ad26-40ed-b0ef-212907cdc39a",
+          "kind": "number",
+          "direction": "input",
+          "label": "A"
+        },
+        {
+          "id": "49bedfbd-b31f-41e9-9208-53193ee9e4fa",
+          "kind": "number",
+          "direction": "input",
+          "label": "A"
+        },
+        {
+          "id": "d7893218-0949-4618-a27e-573bf8ff6430",
+          "kind": "number",
+          "direction": "input",
+          "label": "A"
+        },
+        {
+          "id": "6c7ba209-9156-473b-8a9b-b6f6a7d94c7c",
+          "kind": "number",
+          "direction": "input",
+          "label": "A"
+        },
+        {
+          "id": "a0e97c84-1c64-46e4-8ebc-c753aa27a806",
+          "kind": "number",
+          "direction": "input",
+          "label": "A"
+        },
+        {
+          "id": "cbceb56d-96d0-4301-9ccd-9cf701f14c66",
+          "kind": "number",
+          "direction": "input",
+          "label": "A"
+        },
+        {
+          "id": "a06c76c8-80a8-4fca-bf83-100083bfa2ae",
+          "kind": "number",
+          "direction": "input",
+          "label": "B"
+        }
+      ],
+      "out": [
+        {
+          "id": "698da88d-55d4-4c56-b8c0-0e5cdfd53379",
+          "kind": "number",
+          "direction": "output",
+          "label": "Out"
+        }
+      ]
+    },
+    {
+      "id": "e15c7b06-226a-4772-ae3c-5f5c2223c7ca",
+      "type": "Sub",
+      "x": 0,
+      "y": 0,
+      "width": 120,
+      "height": 50,
+      "data": {},
+      "in": [
+        {
+          "id": "d956ceee-7600-48c9-acce-9449bbe4d7ce",
+          "kind": "number",
+          "direction": "input",
+          "label": "A"
+        },
+        {
+          "id": "4ac1c2e3-65d0-4a44-8ed4-8a35fc25d433",
+          "kind": "number",
+          "direction": "input",
+          "label": "B"
+        }
+      ],
+      "out": [
+        {
+          "id": "dd015a10-7afe-4ee2-b5ce-a55774d84f0f",
+          "kind": "number",
+          "direction": "output",
+          "label": "Out"
+        }
+      ]
+    }
+  ],
+  "connections": []
+}
