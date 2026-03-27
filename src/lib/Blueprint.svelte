@@ -55,6 +55,7 @@
 
   eventsTarget.on("nodeMove", () => {
     updatePosition();
+    eventsTarget.emit("redraw", undefined);
   });
 </script>
 

@@ -20,6 +20,12 @@ export interface EditorEvents {
 
   // Editor redraw / request
   redraw: undefined;
+  mouseDown: MouseEvent;
+  mouseMove: MouseEvent;
+  mouseUp: MouseEvent;
+  mouseWheel: { delta: number, x: number, y: number };
+  keyDown: KeyboardEvent;
+  keyUp: KeyboardEvent;
 
   // Conexões
   connectionCreated: { connection: Connection };

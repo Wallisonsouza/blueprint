@@ -1,3 +1,4 @@
+import type { Camera } from "../editor/Camera";
 import type { EditorEvents } from "../editor/Events";
 import type { BlueprintNode } from "../graph-api/BlueprintNode";
 import type { EventBus } from "../graph-api/EventBus";
@@ -10,21 +11,19 @@ interface DragState {
   node?: BlueprintNode;
   port?: Port;
   startPos?: { x: number; y: number };
-  mouseStart?: { x: number; y: number };
+  mouseStartWorld?: { x: number; y: number };
 }
 
 export class DragController {
   private dragState: DragState = { type: null };
+  private step = 10;
 
-  private mouseMoveWrapper = (e: Event) => this.onDragMove(e as MouseEvent);
-  private mouseUpWrapper = () => this.onDragUp();
+  constructor(private events: EventBus<EditorEvents>, private camera: Camera) {
 
-  constructor(
-    private events: EventBus<EditorEvents>,
-    private target: EventTarget = window
-  ) {
     this.events.on("nodeDown", this.onNodeDown);
     this.events.on("portDown", this.onPortDown);
+    this.events.on("mouseMove", this.onDragMove);
+    this.events.on("mouseUp", this.onDragUp);
   }
 
   private onNodeDown = ({ node, event }: EditorEvents["nodeDown"]) => {
@@ -32,11 +31,8 @@ export class DragController {
       type: "node",
       node,
       startPos: { ...node.position },
-      mouseStart: { x: event.clientX, y: event.clientY },
+      mouseStartWorld: this.camera.screenToWorld(event.clientX, event.clientY),
     };
-
-    this.target.addEventListener("mousemove", this.mouseMoveWrapper);
-    this.target.addEventListener("mouseup", this.mouseUpWrapper);
   };
 
   private onPortDown = ({ port }: EditorEvents["portDown"]) => {
@@ -44,31 +40,29 @@ export class DragController {
       type: "port",
       port,
     };
-
-    this.target.addEventListener("mousemove", this.mouseMoveWrapper);
-    this.target.addEventListener("mouseup", this.mouseUpWrapper);
   };
 
   private onDragMove = (e: MouseEvent) => {
     if (!this.dragState.type) return;
 
-    if (
-      this.dragState.type === "node" &&
-      this.dragState.node &&
-      this.dragState.startPos &&
-      this.dragState.mouseStart
-    ) {
-      const dx = e.clientX - this.dragState.mouseStart.x;
-      const dy = e.clientY - this.dragState.mouseStart.y;
+    if (this.dragState.type === "node" && this.dragState.node && this.dragState.startPos && this.dragState.mouseStartWorld) {
+      const currentWorld = this.camera.screenToWorld(e.clientX, e.clientY);
 
-      this.dragState.node.position.x = this.dragState.startPos.x + dx;
-      this.dragState.node.position.y = this.dragState.startPos.y + dy;
+      let targetX = this.dragState.startPos.x + (currentWorld.x - this.dragState.mouseStartWorld.x);
+      let targetY = this.dragState.startPos.y + (currentWorld.y - this.dragState.mouseStartWorld.y);
+
+      if (e.ctrlKey) {
+        targetX = Math.round(targetX / this.step) * this.step;
+        targetY = Math.round(targetY / this.step) * this.step;
+      }
+
+      this.dragState.node.position.x = targetX;
+      this.dragState.node.position.y = targetY;
 
       this.events.emit("nodeMove", { node: this.dragState.node, event: e });
     }
 
     if (this.dragState.type === "port" && this.dragState.port) {
-      this.events.emit("redraw", undefined);
       this.events.emit("portDrag", {
         port: this.dragState.port,
         x: e.clientX,
@@ -77,14 +71,11 @@ export class DragController {
     }
   };
 
-  private onDragUp = () => {
+  private onDragUp = (e?: MouseEvent) => {
     if (this.dragState.type === "port" && this.dragState.port) {
       this.events.emit("portUp", { port: this.dragState.port });
     }
 
     this.dragState = { type: null };
-
-    this.target.removeEventListener("mousemove", this.mouseMoveWrapper);
-    this.target.removeEventListener("mouseup", this.mouseUpWrapper);
   };
 }
