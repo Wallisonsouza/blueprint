@@ -1,5 +1,5 @@
 <script>
-  import BlueprintNode from "./lib/Editor.svelte";
+  import BlueprintNode from "./Editor.svelte";
 </script>
 
 <BlueprintNode></BlueprintNode>

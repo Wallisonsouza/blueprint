@@ -1,4 +1,4 @@
-import type { Position } from "./graph-api/BlueprintNode";
+import type { Position } from "../graph-api/BlueprintNode";
 
 export class Camera {
   public scale: number;

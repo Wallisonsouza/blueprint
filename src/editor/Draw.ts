@@ -1,4 +1,4 @@
-import type { Position } from "./graph-api/BlueprintNode";
+import type { Position } from "../graph-api/BlueprintNode";
 
 export interface PreviewConnection {
   a: Position;

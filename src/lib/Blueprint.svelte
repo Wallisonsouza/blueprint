@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onDestroy, onMount } from "svelte";
-  import type { NodeEditorEvents } from "../Events";
   import type { BlueprintNode } from "../graph-api/BlueprintNode";
   import type { EventBus } from "../graph-api/EventBus";
+    import type { NodeEditorEvents } from "../editor/Events";
 
   export let node: BlueprintNode;
   export let scale = 1;

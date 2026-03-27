@@ -1,10 +1,10 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { Camera } from "../Camera";
-  import { drawBezier, type PreviewConnection } from "../Draw";
   import { graph } from "../controllers/GraphController";
+  import { Camera } from "../editor/Camera";
 
   import { nodeEvents } from "../controllers/NodeController";
+  import { drawBezier, type PreviewConnection } from "../editor/Draw";
   import type { Position } from "../graph-api/BlueprintNode";
   import type { Connection, Port } from "../graph-api/Types";
   import Blueprint from "./Blueprint.svelte";
