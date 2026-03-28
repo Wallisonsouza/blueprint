@@ -13,6 +13,7 @@ export interface Port<T = any> {
   direction: PortDirection;
   label?: string;
   offset?: Position;
+  el?: HTMLElement;
 }
 
 export interface Connection {

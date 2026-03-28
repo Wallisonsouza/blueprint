@@ -66,12 +66,9 @@
   class="node"
   on:mousedown={onMouseDown}
 >
-  <div class="node-header">{node.type}</div>
-
   <div class="node">
-    <div class="node-header">{node.type}</div>
+    <div class="node-header {node.category || 'default'}">{node.type}</div>
 
-    <!-- Exec ports -->
     <div class="exec-ports">
       {#each Array(Math.max(node.inputs.filter((p) => p.type === "exec").length, node.outputs.filter((p) => p.type === "exec").length)) as _, i}
         <div class="port-row">
@@ -80,23 +77,22 @@
               <div
                 class="port input-port exec"
                 id={node.inputs.filter((p) => p.type === "exec")[i].id}
-              >
-                <div class="port-label">
-                  {node.inputs.filter((p) => p.type === "exec")[i].label}
-                </div>
+              ></div>
+
+              <div class="port-label">
+                {node.inputs.filter((p) => p.type === "exec")[i].label}
               </div>
             {/if}
           </div>
           <div class="right">
             {#if node.outputs.filter((p) => p.type === "exec")[i]}
+              <div class="port-label">
+                {node.outputs.filter((p) => p.type === "exec")[i].label}
+              </div>
               <div
                 class="port output-port exec"
                 id={node.outputs.filter((p) => p.type === "exec")[i].id}
-              >
-                <div class="port-label">
-                  {node.outputs.filter((p) => p.type === "exec")[i].label}
-                </div>
-              </div>
+              ></div>
             {/if}
           </div>
         </div>
@@ -138,6 +134,51 @@
 </div>
 
 <style>
+  .node-header.event {
+    background: #e74c3c;
+  }
+
+  .node-header.logic {
+    background: #9b59b6;
+  }
+
+  .node-header.math {
+    background: #3498db;
+  }
+
+  .node-header.variable {
+    background: #2ecc71;
+  }
+
+  .node-header.function {
+    background: #f1c40f;
+    color: #2c3e50;
+  }
+
+  .node-header.flow {
+    background: #e67e22;
+  }
+
+  .node-header.data {
+    background: #323232;
+  }
+
+  .node-header.system {
+    background: #34495e;
+  }
+
+  .node-header.input {
+    background: #8e5a2b;
+  }
+
+  .node-header.physics {
+    background: #1abc9c;
+  }
+
+  .node-header.default {
+    background: #7f8c8d;
+  }
+
   .node {
     position: absolute;
     background: #2c3e50;
@@ -154,13 +195,14 @@
   }
 
   .node-header {
-    background: #96c30e;
     padding: 4px 8px;
     font-weight: bold;
     text-align: center;
+    border-radius: 4px 4px 0px 0px;
   }
 
   .port-row {
+    padding: 8px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -179,12 +221,10 @@
 
   .port.input-port.exec,
   .port.output-port.exec {
-    background: #e67e22;
-    padding: 2px 6px;
-    border-radius: 4px;
-    color: white;
-    min-width: 40px;
-    text-align: center;
+    background: #ffffff;
+    width: 16px;
+    height: 16px;
+    border-radius: 25%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -199,7 +239,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
   }
 
   .port-label {

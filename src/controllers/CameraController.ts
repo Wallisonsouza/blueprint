@@ -20,9 +20,13 @@ export class CameraController {
   }
 
   private onMouseDown = (e: MouseEvent) => {
-    this.isDragging = true;
-    this.startX = e.clientX;
-    this.startY = e.clientY;
+
+    if (e.button == 0 || e.button == 1) {
+      this.isDragging = true;
+      this.startX = e.clientX;
+      this.startY = e.clientY;
+    }
+
   };
 
   private onMouseMove = (e: MouseEvent) => {

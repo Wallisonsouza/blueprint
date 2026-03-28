@@ -19,11 +19,11 @@ export type PortTypeMap = {
 
 };
 
-export const PORT_COLORS: Record<TypeKind, string> = {
-  number: "#6a5acd",
-  string: "#f1c40f",
-  boolean: "#e67e22",
-  any: "#7f8c8d",
-  exec: "red",
-  void: "#95a5a6",
+export const PORT_COLORS: Record<TypeKind, number> = {
+  number: 0x3498db,
+  string: 0xf1c40f,
+  boolean: 0xe67e22,
+  any: 0x7f8c8d,
+  exec: 0xe74c3c,
+  void: 0x95a5a6,
 };

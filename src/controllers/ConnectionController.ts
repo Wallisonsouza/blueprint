@@ -62,6 +62,9 @@ export class ConnectionController {
   };
 
   private onPortDown = ({ port, event }: EditorEvents["portDown"]) => {
+
+    if (event.button != 0) return;
+
     const conn = this.graph.getFirstConnectionByPort(port);
 
     this.portState = {
@@ -104,6 +107,13 @@ export class ConnectionController {
     };
   }
 
+  setGraph(graph: NodeGraph) {
+    this.graph = graph;
 
+    this.previewConnection = null;
+    this.portState = { port: null, connection: null };
+    this.hoveredPort = null;
 
+    this.events.emit("redraw", undefined);
+  }
 }

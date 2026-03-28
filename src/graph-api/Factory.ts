@@ -1,4 +1,4 @@
-import type { BlueprintNode, Position } from "./BlueprintNode";
+import type { BlueprintNode, NodeCategory, Position } from "./BlueprintNode";
 import type { TypeKind } from "./Map";
 import { type Connection, type Port } from "./Types";
 
@@ -40,6 +40,7 @@ export class Factory {
 
   public static createNode(
     type: string,
+    category: NodeCategory,
     position: Position = { x: 0, y: 0 },
     data: any = {},
   ): BlueprintNode {
@@ -48,6 +49,7 @@ export class Factory {
     return {
       id: nodeId,
       type,
+      category: category,
       position: position,
       inputs: [],
       outputs: []

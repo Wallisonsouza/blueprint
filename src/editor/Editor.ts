@@ -19,7 +19,7 @@ export class Editor {
   public connectionController: ConnectionController;
   private editorController: EditorController;
 
-  constructor(ctx: CanvasRenderingContext2D, step: number = 50) {
+  constructor(step: number = 50) {
     this.step = step;
     this.graph = new NodeGraph();
 
@@ -27,9 +27,14 @@ export class Editor {
     this.graph.addNode(NodeBuilder.create("Add", { x: 100, y: 100 })!);
     this.graph.addNode(NodeBuilder.create("Multiply", { x: 200, y: 200 })!);
     this.graph.addNode(NodeBuilder.create("Number", { x: 400, y: 200 })!);
-    this.graph.addNode(NodeBuilder.create("PrintString", { x: 500, y: 300 })!);
 
-    this.graph.addNode(NodeBuilder.create("EventStart", { x: 500, y: 100 })!);
+    this.graph.addNode(NodeBuilder.create("Player", { x: 500, y: 300 })!);
+    this.graph.addNode(NodeBuilder.create("OnStart", { x: 500, y: 100 })!);
+    this.graph.addNode(NodeBuilder.create("OnTick", { x: 500, y: 100 })!);
+    this.graph.addNode(NodeBuilder.create("OnKeyPressed", { x: 600, y: 100 })!);
+    this.graph.addNode(NodeBuilder.create("OnMouseClick", { x: 700, y: 100 })!);
+
+    this.graph.addNode(NodeBuilder.create("While", { x: 800, y: 100 })!);
 
     this.camera = new Camera();
 
@@ -42,5 +47,12 @@ export class Editor {
       this.camera,
     );
   }
-}
 
+  loadGraph(graph: NodeGraph) {
+    this.graph = graph;
+
+    this.connectionController.setGraph(graph);
+
+    // this.events.emit("redraw", undefined);
+  }
+}
