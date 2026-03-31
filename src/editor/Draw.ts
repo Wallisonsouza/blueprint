@@ -17,7 +17,10 @@ export class Draw {
     g: Graphics,
     editor: Editor,
   ) {
-    editor.graph.connections.forEach((conn) => {
+
+    const scene = editor.scene;
+
+    scene.graph.connections.forEach((conn) => {
       const a = getPortPosition(conn.from);
       const b = getPortPosition(conn.to);
 
@@ -41,7 +44,10 @@ export class Draw {
     editor: Editor,
     time: number
   ) {
-    editor.graph.connections.forEach((conn) => {
+
+    const scene = editor.scene;
+
+    scene.graph.connections.forEach((conn) => {
       const a = getPortPosition(conn.from);
       const b = getPortPosition(conn.to);
 
@@ -131,18 +137,19 @@ export class Draw {
     const width = renderer.width;
     const height = renderer.height;
 
-    const cam = editor.camera;
+    const scene = editor.scene;
 
-    const scaledStep = editor.step * cam.scale;
 
-    const worldZero = cam.worldToScreen({ x: 0, y: 0 });
+    const scaledStep = editor.step * scene.camera.scale;
+
+    const worldZero = scene.camera.worldToScreen({ x: 0, y: 0 });
 
     const offsetX = worldZero.x % scaledStep;
     const offsetY = worldZero.y % scaledStep;
 
 
     g.setStrokeStyle({
-      width: 1 * cam.scale,
+      width: 1 * scene.camera.scale,
       color: 0x040404,
       alpha: 0.88
     });
@@ -173,5 +180,4 @@ export class Draw {
 
     g.stroke();
   }
-
 }

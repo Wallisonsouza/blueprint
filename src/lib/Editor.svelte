@@ -4,11 +4,6 @@
 
   import { Draw } from "../editor/Draw";
   import { Editor } from "../editor/Editor";
-  import { loadGraph, saveGraph } from "../editor/Save";
-  import {
-    deserializeGraph,
-    serializeGraph,
-  } from "../graph-api/GraphSerealizer";
   import Blueprint from "./Blueprint.svelte";
 
   let cameraElement: HTMLDivElement;
@@ -43,10 +38,10 @@
     app.stage.addChild(flowLayer);
     editor = new Editor();
 
-    const json = await loadGraph("test");
-    editor.loadGraph(deserializeGraph(json));
+    // const json = await loadGraph("test");
+    // editor.loadGraph(deserializeGraph(json));
 
-    nodes = Array.from(editor.graph.nodes.values());
+    nodes = Array.from(editor.scene.graph.nodes.values());
 
     editor.events.on("redraw", draw);
 
@@ -70,28 +65,18 @@
     Draw.drawConnections(connectionLayer, editor);
     Draw.drawPreviewConnection(connectionLayer, editor);
 
-    connectionLayer.position.set(editor.camera.x, editor.camera.y);
-    connectionLayer.scale.set(editor.camera.scale);
+    connectionLayer.position.set(editor.scene.camera.x, editor.scene.camera.y);
+    connectionLayer.scale.set(editor.scene.camera.scale);
 
-    flowLayer.position.set(editor.camera.x, editor.camera.y);
-    flowLayer.scale.set(editor.camera.scale);
+    flowLayer.position.set(editor.scene.camera.x, editor.scene.camera.y);
+    flowLayer.scale.set(editor.scene.camera.scale);
 
     sceneElement.style.transform = `
-      translate(${editor.camera.x}px, ${editor.camera.y}px)
-      scale(${editor.camera.scale})
+      translate(${editor.scene.camera.x}px, ${editor.scene.camera.y}px)
+      scale(${editor.scene.camera.scale})
     `;
   }
 </script>
-
-<button
-  class="save"
-  on:click={async () => {
-    const json = serializeGraph(editor.graph);
-    await saveGraph("test", json);
-  }}
->
-  Save
-</button>
 
 <div bind:this={cameraElement} class="camera">
   <div bind:this={sceneElement} class="scene">
