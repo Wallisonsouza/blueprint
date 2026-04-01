@@ -4,6 +4,8 @@
 
   import { Draw } from "../editor/Draw";
   import { Editor } from "../editor/Editor";
+  import { loadGraph } from "../editor/Save";
+  import { SceneSerealizer } from "../graph-api/GraphSerealizer";
   import Blueprint from "./Blueprint.svelte";
 
   let cameraElement: HTMLDivElement;
@@ -36,10 +38,11 @@
     app.stage.addChild(gridLayer);
     app.stage.addChild(connectionLayer);
     app.stage.addChild(flowLayer);
-    editor = new Editor();
+    editor = new Editor(cameraElement);
 
-    // const json = await loadGraph("test");
-    // editor.loadGraph(deserializeGraph(json));
+    const json = await loadGraph("test");
+    const scene = SceneSerealizer.deserialize(json);
+    editor.loadScene(scene);
 
     nodes = Array.from(editor.scene.graph.nodes.values());
 

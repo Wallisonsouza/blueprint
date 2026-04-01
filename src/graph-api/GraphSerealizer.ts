@@ -1,7 +1,13 @@
+import type { Camera } from "../editor/Camera";
+import { Scene } from "../editor/Scene";
 import type { BlueprintNode, NodeCategory, Position } from "./BlueprintNode";
 import type { TypeKind } from "./Map";
-import { NodeGraph } from "./NodeGraph";
 import type { Port } from "./Types";
+
+export interface SerializedScene {
+  camera: Camera;
+  graph: SerializedGraph;
+}
 
 export interface SerializedPort {
   id: string;
@@ -26,106 +32,106 @@ export interface SerializedConnection {
 }
 
 export interface SerializedGraph {
-  version: number;
   nodes: SerializedNode[];
   connections: SerializedConnection[];
 }
 
+export class SceneSerealizer {
 
-export function serializeGraph(graph: NodeGraph): string {
-  const data: SerializedGraph = {
-    version: 3,
+  public static serialize(scene: Scene): string {
 
-    nodes: Array.from(graph.nodes.values()).map(node => ({
-      id: node.id,
-      category: node.category,
-      type: node.type,
-      position: node.position,
+    const serialized: SerializedScene = {
+      camera: scene.camera,
+      graph: {
+        nodes: Array.from(scene.graph.nodes.values()).map(node => ({
+          id: node.id,
+          category: node.category,
+          type: node.type,
+          position: node.position,
 
-      inputs: node.inputs.map(p => ({
-        id: p.id,
-        nodeId: node.id,
-        type: p.type,
-        label: p.label
-      })),
+          inputs: node.inputs.map(p => ({
+            id: p.id,
+            nodeId: node.id,
+            type: p.type,
+            label: p.label
+          })),
 
-      outputs: node.outputs.map(p => ({
-        id: p.id,
-        nodeId: node.id,
-        type: p.type,
-        label: p.label
-      }))
-    })),
+          outputs: node.outputs.map(p => ({
+            id: p.id,
+            nodeId: node.id,
+            type: p.type,
+            label: p.label
+          }))
+        })),
 
-    connections: Array.from(graph.connections.values()).map(c => ({
-      id: c.id,
-      fromId: c.from.id,
-      toId: c.to.id
-    }))
-  };
-
-  console.log("saved", JSON.stringify(data));
-
-  return JSON.stringify(data);
-}
-
-export function deserializeGraph(json: string): NodeGraph {
-  const data: SerializedGraph = JSON.parse(json);
-
-  const graph = new NodeGraph();
-
-  for (const n of data.nodes) {
-
-    console.log(n)
-
-    const node: BlueprintNode = {
-      id: n.id,
-      category: n.category,
-      type: n.type,
-      position: n.position,
-      inputs: [],
-      outputs: []
-    };
-
-    for (const p of n.inputs) {
-      const port: Port = {
-        id: p.id,
-        node,
-        type: p.type,
-        label: p.label,
-        direction: "input",
-        offset: { x: 0, y: 0 }
-      };
-
-      node.inputs.push(port);
+        connections: Array.from(scene.graph.connections.values()).map(c => ({
+          id: c.id,
+          fromId: c.from.id,
+          toId: c.to.id
+        }))
+      }
     }
 
-    for (const p of n.outputs) {
-      const port: Port = {
-        id: p.id,
-        node,
-        type: p.type,
-        label: p.label,
-        direction: "output",
-        offset: { x: 0, y: 0 }
-      };
-
-      node.outputs.push(port);
-    }
-
-    graph.addNode(node);
+    return JSON.stringify(serialized);
   }
 
-  for (const c of data.connections) {
-    const from = graph.getPort(c.fromId);
-    const to = graph.getPort(c.toId);
+  public static deserialize(json: string): Scene {
 
-    if (from && to) {
-      graph.connect(from, to);
-    } else {
-      console.warn("Connection inválida:", c);
+    const data: SerializedScene = JSON.parse(json);
+
+    const scene = new Scene();
+
+    for (const n of data.graph.nodes) {
+
+      const node: BlueprintNode = {
+        id: n.id,
+        category: n.category,
+        type: n.type,
+        position: n.position,
+        inputs: [],
+        outputs: []
+      };
+
+      for (const p of n.inputs) {
+        const port: Port = {
+          id: p.id,
+          node,
+          type: p.type,
+          label: p.label,
+          direction: "input",
+          offset: { x: 0, y: 0 }
+        };
+
+        node.inputs.push(port);
+      }
+
+      for (const p of n.outputs) {
+        const port: Port = {
+          id: p.id,
+          node,
+          type: p.type,
+          label: p.label,
+          direction: "output",
+          offset: { x: 0, y: 0 }
+        };
+
+        node.outputs.push(port);
+      }
+
+      scene.graph.addNode(node);
     }
-  }
 
-  return graph;
+    for (const c of data.graph.connections) {
+      const from = scene.graph.getPort(c.fromId);
+      const to = scene.graph.getPort(c.toId);
+
+      if (from && to) {
+        scene.graph.connect(from, to);
+      } else {
+        console.warn("Connection inválida:", c);
+      }
+    }
+
+    return scene;
+  }
 }

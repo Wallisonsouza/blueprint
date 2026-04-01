@@ -1,7 +1,6 @@
 
-import type { Camera } from "../editor/Camera";
+import type { Editor } from "../editor/Editor";
 import type { EditorEvents } from "../editor/Events";
-import type { EventBus } from "../graph-api/EventBus";
 
 export class CameraController {
   private isDragging = false;
@@ -9,14 +8,13 @@ export class CameraController {
   private startY = 0;
 
   constructor(
-    private events: EventBus<EditorEvents>,
-    private camera: Camera,
+    private editor: Editor
   ) {
 
-    events.on("mouseMove", this.onMouseMove);
-    events.on("mouseUp", this.onMouseUp);
-    events.on("mouseDown", this.onMouseDown);
-    events.on("mouseWheel", this.onWheel);
+    this.editor.events.on("mouseMove", this.onMouseMove);
+    this.editor.events.on("mouseUp", this.onMouseUp);
+    this.editor.events.on("mouseDown", this.onMouseDown);
+    this.editor.events.on("mouseWheel", this.onWheel);
   }
 
   private onMouseDown = (e: MouseEvent) => {
@@ -36,13 +34,13 @@ export class CameraController {
     this.startX = e.clientX;
     this.startY = e.clientY;
 
-    this.camera.pan(dx, dy);
-    this.events.emit("cameraMove", {
-      offsetX: this.camera.x,
-      offsetY: this.camera.y,
-      scale: this.camera.scale,
+    this.editor.scene.camera.pan(dx, dy);
+    this.editor.events.emit("cameraMove", {
+      offsetX: this.editor.scene.camera.x,
+      offsetY: this.editor.scene.camera.y,
+      scale: this.editor.scene.camera.scale,
     });
-    this.events.emit("redraw", undefined);
+    this.editor.events.emit("redraw", undefined);
   };
 
   private onMouseUp = () => {
@@ -53,9 +51,9 @@ export class CameraController {
 
     const factor = 1 - delta * 0.0015;
 
-    this.camera.zoom(factor, x, y);
+    this.editor.scene.camera.zoom(factor, x, y);
 
 
-    this.events.emit("redraw", undefined);
+    this.editor.events.emit("redraw", undefined);
   };
 };

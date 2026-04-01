@@ -1,8 +1,7 @@
-import type { Camera } from "../editor/Camera";
+import type { Editor } from "../editor/Editor";
 import type { EditorEvents } from "../editor/Events";
 import { getPortPosition } from "../editor/Utilts";
 import type { Position } from "../graph-api/BlueprintNode";
-import type { EventBus } from "../graph-api/EventBus";
 import type { NodeGraph } from "../graph-api/NodeGraph";
 import type { Connection, Port } from "../graph-api/Types";
 
@@ -24,15 +23,13 @@ export class ConnectionController {
   private hoveredPort: Port | null = null;
 
   constructor(
-    private events: EventBus<EditorEvents>,
-    private graph: NodeGraph,
-    private camera: Camera,
+    private editor: Editor
   ) {
-    this.events.on("portEnter", this.onPortEnter);
-    this.events.on("portLeave", this.onPortLeave);
-    this.events.on("portDown", this.onPortDown);
-    this.events.on("portDrag", this.onPortDrag);
-    this.events.on("mouseUp", this.onMouseUp);
+    this.editor.events.on("portEnter", this.onPortEnter);
+    this.editor.events.on("portLeave", this.onPortLeave);
+    this.editor.events.on("portDown", this.onPortDown);
+    this.editor.events.on("portDrag", this.onPortDrag);
+    this.editor.events.on("mouseUp", this.onMouseUp);
   }
 
 
@@ -40,13 +37,13 @@ export class ConnectionController {
     if (!this.previewConnection || !this.portState.port) return;
 
     if (this.hoveredPort && this.hoveredPort !== this.portState.port) {
-      this.graph.connect(this.portState.port, this.hoveredPort);
+      this.editor.scene.graph.connect(this.portState.port, this.hoveredPort);
     }
 
     this.previewConnection = null;
     this.portState = { port: null, connection: null };
 
-    this.events.emit("redraw", undefined);
+    this.editor.events.emit("redraw", undefined);
 
   };
 
@@ -65,7 +62,7 @@ export class ConnectionController {
 
     if (event.button != 0) return;
 
-    const conn = this.graph.getFirstConnectionByPort(port);
+    const conn = this.editor.scene.graph.getFirstConnectionByPort(port);
 
     this.portState = {
       port,
@@ -83,10 +80,10 @@ export class ConnectionController {
   private onPortDrag = ({ port, x, y }: EditorEvents["portDrag"]) => {
     if (!this.previewConnection) return;
 
-    const world = this.camera.screenToWorld(x, y);
+    const world = this.editor.scene.camera.screenToWorld(x, y);
     this.previewConnection.b = world;
 
-    this.events.emit("redraw", undefined);
+    this.editor.events.emit("redraw", undefined);
   };
 
   private startNewConnection(port: Port) {
@@ -98,7 +95,7 @@ export class ConnectionController {
 
   private startRelink(port: Port, conn: Connection) {
     const fixedPort = port.direction === "input" ? conn.from : conn.to;
-    this.graph.disconnect(conn);
+    this.editor.scene.graph.disconnect(conn);
     this.portState.port = fixedPort;
 
     this.previewConnection = {
@@ -108,12 +105,12 @@ export class ConnectionController {
   }
 
   setGraph(graph: NodeGraph) {
-    this.graph = graph;
+    this.editor.scene.graph = graph;
 
     this.previewConnection = null;
     this.portState = { port: null, connection: null };
     this.hoveredPort = null;
 
-    this.events.emit("redraw", undefined);
+    this.editor.events.emit("redraw", undefined);
   }
 }

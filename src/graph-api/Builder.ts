@@ -77,7 +77,6 @@ NodeBuilder.register("Subtract", (position) => {
   return node;
 });
 
-
 NodeBuilder.register("OnStart", (position) => {
   const node = Factory.createNode("OnStart", "event", position);
 
@@ -86,7 +85,6 @@ NodeBuilder.register("OnStart", (position) => {
 
   return node;
 });
-
 
 NodeBuilder.register("Player", (position) => {
   const node = Factory.createNode("Player", "data", position);
